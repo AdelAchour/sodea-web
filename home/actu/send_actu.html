@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Nouvelle actualité</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->
+	<link rel="icon" type="image/png" href="images/icons/envelope.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/Linearicons-Free-v1.0.0/icon-font.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/daterangepicker/daterangepicker.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="css/util.css">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
+<!--===============================================================================================-->
+</head>
+<body>
+
+
+	<div class="container-contact100">
+		<div class="wrap-contact100">
+			<form class="contact100-form validate-form" id="actu-form">
+				<span class="contact100-form-title">
+					Nouvelle actualité
+				</span>
+
+				<div class="wrap-input100 validate-input" data-validate = "Valid title is required">
+					<label class="label-input100" for="title">Titre de l'actualité</label>
+					<input id="title" class="input100" type="text" name="title" placeholder="Titre bref...">
+					<span class="focus-input100"></span>
+				</div>
+				
+
+				<div class="wrap-input100 validate-input" data-validate = "Message is required">
+					<label class="label-input100" for="message">Contenu</label>
+					<textarea id="message" class="input100" name="message" placeholder="Contenu de l'actualité..."></textarea>
+					<span class="focus-input100"></span>
+				</div>
+
+                <div class="container-contact100-form-btn">
+                    <button class="contact100-form-btn">
+                        Envoyer
+                    </button>
+                </div>
+
+				<div class="contact100-form-social flex-c-m">
+					
+					<font size="2">© 2020 GSH Inc - DSI - Adel ACHOUR</font>
+
+					
+				</div>
+
+			</form>
+
+			<div class="contact100-more flex-col-c-m" style="background-image: url('images/sodea-actu-bg.jpg');">
+			</div>
+		</div>
+	</div>
+
+
+<!--===============================================================================================-->
+	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/animsition/js/animsition.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/bootstrap/js/popper.js"></script>
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+    <script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-messaging.js"></script>
+
+	
+	<script>
+		$(".js-select2").each(function(){
+			$(this).select2({
+				minimumResultsForSearch: 20,
+				dropdownParent: $(this).next('.dropDownSelect2')
+			});
+		})
+		$(".js-select2").each(function(){
+			$(this).on('select2:open', function (e){
+				$(this).parent().next().addClass('eff-focus-selection');
+			});
+		});
+		$(".js-select2").each(function(){
+			$(this).on('select2:close', function (e){
+				$(this).parent().next().removeClass('eff-focus-selection');
+			});
+		});
+
+	</script>
+<!--===============================================================================================-->
+	<script src="vendor/daterangepicker/moment.min.js"></script>
+	<script src="vendor/daterangepicker/daterangepicker.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/countdowntime/countdowntime.js"></script>
+<!--===============================================================================================-->
+	<script src="js/main.js"></script>
+    <script src="js/firebaseApp.js"></script>
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-23581568-13"></script>
+	<script>
+	  window.dataLayer = window.dataLayer || [];
+	  function gtag(){dataLayer.push(arguments);}
+	  gtag('js', new Date());
+
+	  gtag('config', 'UA-23581568-13');
+	</script>
+
+
+<script>
+    var db = firebase.firestore();
+
+    $('#actu-form').on('submit', function (e) {
+        console.log('\nclicked !')
+        e.preventDefault();
+
+        var title = $("#title").val();
+        var content = $("#message").val();
+
+        /** check data **/
+        if(validateData(title, content)){
+            var date = getDateTime();
+            populateDB(title, content, date);
+        }
+
+        /** validate the data **/
+        function validateData(title, content) {
+            var correct = true;
+            if ((title == "") || (content == "")) {
+                console.log("data not valid.");
+                correct = false;
+            }
+            return correct;
+        }
+
+        /** send a notif **/
+        function sendNotif(title, content, date) {
+            var formData = JSON.stringify(
+                {
+                    "data":{
+                        "title": title,
+                        "content": content,
+                        "date": date
+                    },
+                    "to": "/topics/newsSODEA",
+                    "priority": "high"
+                });
+
+            $.ajax({
+                url: "https://fcm.googleapis.com/fcm/send",
+                method: "POST",
+                data: formData,
+                headers: {
+                    'Authorization' : 'key=AAAAZKJA20s:APA91bEpefYIbg7JM97p0QsHmXxf1A-aFmAdtOuZQr76a9KcKCQJLzHsyg5noLVLjD_t1Dmz6UQW8K-URm4_L16onpkeXglgYOqQ9CrgwVmZ-P3WpScyjPwr7A-o5-eHfKO68MDm6uD_',
+                    'Content-Type' : 'application/json'
+                }
+            }).done(function(response) {
+                alert("Actualité envoyée avec succès");
+            });
+        }
+
+        /** populate the database **/
+        function populateDB(title, content, date) {
+            console.log("\npopulating the database...\n")
+            // Add a new product with a generated id.
+            db.collection("news").add({
+                title: title,
+                content: content,
+                date: date,
+                date_edit: "-"
+            })
+                .then(function(docRef) {
+                    console.log("Document written with ID: ", docRef.id);
+                    sendNotif(title, content, date);
+                    //alert("Actualité envoyée avec succès");
+                })
+                .catch(function(error) {
+                    console.error("Error adding document: ", error);
+                    alert("Impossible d'envoyer l'actualité");
+                });
+        }
+    });
+
+
+    /** get time **/
+    function getDateTime() {
+        var now     = new Date();
+        var year    = now.getFullYear();
+        var month   = now.getMonth()+1;
+        var day     = now.getDate();
+        var hour    = now.getHours();
+        var minute  = now.getMinutes();
+        //var second  = now.getSeconds();
+        if(month.toString().length == 1) {
+            month = '0'+month;
+        }
+        if(day.toString().length == 1) {
+            day = '0'+day;
+        }
+        if(hour.toString().length == 1) {
+            hour = '0'+hour;
+        }
+        if(minute.toString().length == 1) {
+            minute = '0'+minute;
+        }
+        /*if(second.toString().length == 1) {
+             second = '0'+second;
+        } */
+        var dateTime = day+'/'+month+'/'+year+' '+hour+':'+minute;
+        return dateTime;
+    }
+</script>
+
+
+</body>
+</html>

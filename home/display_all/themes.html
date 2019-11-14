@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Liste des thèmes</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->	
+	<link rel="icon" type="image/png" href="images/icons/favicon_.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/perfect-scrollbar/perfect-scrollbar.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="css/util.css">
+	<link rel="stylesheet" type="text/css" href="css/main_themes.css">
+<!--===============================================================================================-->
+</head>
+<body>
+	
+	<div class="limiter">
+		<div class="container-table100">
+			<div class="wrap-table100">
+
+                    <!-- *** START TABLE *** -->
+                    <div class="table" id="divTable">
+
+                        <!-- ** START HEADER ** -->
+						<div class="row header">
+							<div class="cell" style="width: 40%;">
+								Nom du thème
+							</div>
+							<div class="cell" style="width: 60%;">
+								Description
+							</div>
+						</div>
+                        <!-- ** END HEADER ** -->
+					</div>
+                <!-- *** END TABLE *** -->
+
+
+			</div>
+		</div>
+	</div>
+
+
+
+
+	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-firestore.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-auth.js"></script>
+<!--===============================================================================================-->	
+	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/bootstrap/js/popper.js"></script>
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+	<script src="js/main.js"></script>
+	<script src="js/firebaseApp.js"></script>
+
+
+<script>
+    var db = firebase.firestore();
+
+    getThemes();
+
+    /** get the themes **/
+    function getThemes() {
+        var arrayThemes = [];
+        db.collection("themes").get().then((querySnapshot) => {
+            arrayThemes = [];
+            querySnapshot.forEach((doc) => {
+                //console.log(`${doc.id} => ${doc.data()}`);
+                console.log(doc.get("name"));
+                arrayThemes.push(doc);
+            });
+            populateTable(arrayThemes);
+        });
+    }
+
+    /** populate the themes **/
+    function populateTable(arrayThemes) {
+        initializeTable();
+        div_row = "";
+
+        for (i = 0; i < arrayThemes.length; i++) {
+            var key = arrayThemes[i].id;
+            var name = arrayThemes[i].get("name");
+            var desc = arrayThemes[i].get("description");
+
+            div_row = div_row +
+                '<div class="row">' +
+                '<div class="cell" title="Nom" id="'+key+'" onclick="openWindow(this.id)" >'+name+'</div>' +
+                '<div class="cell" title="Description" style="padding-right: 25px">'+desc+'</div>' +
+                '</div>'
+
+        }
+        $('#divTable').append(div_row);
+    }
+
+    function openWindow(keyTheme){
+        var link = "products.html?key="+keyTheme;
+        window.open(link,"_self");
+    }
+
+    function initializeTable() {
+        var divTable = document.getElementById('divTable');
+        divTable.innerHTML = "";
+        divTable.innerHTML = '<div class="row header"><div class="cell" style="width: 40%;">Nom du thème</div>' +
+            '<div class="cell" style="width: 60%;">Description</div></div>';
+
+    }
+
+
+    function populateTable2(arrayThemes) {
+        var divTable = document.getElementById('divTable');
+
+        for (i = 0; i < arrayThemes.length; i++) {
+            var key = arrayThemes[i].id;
+            var name = arrayThemes[i].get("name");
+            var desc = arrayThemes[i].get("description");
+
+            var divName = document.createElement("div");
+            divName.className = "cell";
+            divName.setAttribute('title', 'Nom');
+            //divName.innerHTML = name;
+
+            var ahref = document.createElement("a");
+            var link = "products.html?key="+key;
+            ahref.setAttribute('href', link);
+            ahref.innerHTML = name;
+            divName.appendChild(ahref);
+
+
+            var divDesc = document.createElement("div");
+            divDesc.className = "cell";
+            divDesc.setAttribute('title', 'Description');
+            divDesc.innerHTML = desc;
+
+            var divRow = document.createElement("div");
+            divRow.className = "row";
+            divRow.appendChild(divName);
+            divRow.appendChild(divDesc);
+
+            divTable.appendChild(divRow);
+
+        }
+
+    }
+
+</script>
+
+
+</body>
+</html>

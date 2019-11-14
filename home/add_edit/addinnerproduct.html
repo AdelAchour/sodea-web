@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Nouveau sous produit</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->
+	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/iconic/css/material-design-iconic-font.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/daterangepicker/daterangepicker.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/noui/nouislider.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="css/util.css">
+	<link rel="stylesheet" type="text/css" href="css/main_inner.css">
+<!--===============================================================================================-->
+</head>
+<body>
+
+
+	<div class="container-contact100">
+		<div class="wrap-contact100">
+			<form class="contact100-form validate-form" id="product-form">
+				<span class="contact100-form-title">
+					Nouveau sous produit
+				</span>
+
+
+				<!-- Thèmes -->
+				<div class="wrap-input100 input100-select bg1">
+					<span class="label-input100">Thème</span>
+					<div>
+						<select class="js-select2" name="service" id="themeSelect">
+						</select>
+						<div class="dropDownSelect2"></div>
+					</div>
+				</div>
+				
+				<!-- Produit -->
+				<div class="wrap-input100 input100-select bg1">
+					<span class="label-input100">Produit</span>
+					<div>
+						<select class="js-select2" name="service" id="productSelect">
+						</select>
+						<div class="dropDownSelect2"></div>
+					</div>
+				</div>
+				
+				<!-- Nom -->
+				<div class="wrap-input100 validate-input bg1" data-validate="Entrez le nom du sous produit">
+					<span class="label-input100">Nom du sous produit *</span>
+					<input class="input100" type="text" id="name" name="name" placeholder="Entrez le nom du sous produit">
+				</div>
+
+
+                <!-- Description -->
+				<div class="wrap-input100 validate-input bg0 rs1-alert-validate" data-validate = "Entrez la description du produit">
+					<span class="label-input100">Description *</span>
+					<textarea class="input100" id="description" name="message" placeholder="Description du sous produit..."></textarea>
+				</div>
+
+				<div class="container-contact100-form-btn">
+					<button class="contact100-form-btn">
+						<span>
+							Enregistrer
+							<i class="fa fa-long-arrow-right m-l-7" aria-hidden="true"></i>
+						</span>
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+
+    <script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-firestore.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-auth.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/animsition/js/animsition.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/bootstrap/js/popper.js"></script>
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/select2/select2.min.js"></script>
+
+	<script>
+		$(".js-select2").each(function(){
+			$(this).select2({
+				minimumResultsForSearch: 20,
+				dropdownParent: $(this).next('.dropDownSelect2')
+			});
+
+
+			$(".js-select2").each(function(){
+				$(this).on('select2:close', function (e){
+					if($(this).val() == "Please chooses") {
+						$('.js-show-service').slideUp();
+					}
+					else {
+						$('.js-show-service').slideUp();
+						$('.js-show-service').slideDown();
+					}
+				});
+			});
+		})
+	</script>
+<!--===============================================================================================-->
+	<script src="vendor/daterangepicker/moment.min.js"></script>
+	<script src="vendor/daterangepicker/daterangepicker.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/countdowntime/countdowntime.js"></script>
+<!--===============================================================================================-->
+	<script src="js/main.js"></script>
+	<script src="js/firebaseApp.js"></script>
+<!--===============================================================================================-->
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-23581568-13"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-23581568-13');
+</script>
+
+<script>
+    /**** On change listener (selects) ****/
+
+    /** theme select listener **/
+    $("#themeSelect").change(function () {
+        var keyTheme = $(this).val();
+        console.log("Key Thème : "+keyTheme);
+
+        //document.getElementById("loader").style.display = "block";
+
+        getProducts(keyTheme)
+
+    });
+
+    /** product select listener **/
+    $("#productSelect").change(function () {
+        var keyProduct = $(this).val();
+        console.log("Key Product : "+keyProduct);
+
+        //document.getElementById("loader").style.display = "block";
+
+    });
+</script>
+
+
+<script>
+    var db = firebase.firestore();
+    var themeSelect = document.getElementById('themeSelect');
+    var productSelect = document.getElementById('productSelect');
+
+    getThemes();
+
+    /** get the themes **/
+    function getThemes() {
+        var arrayThemes = [];
+        db.collection("themes").get().then((querySnapshot) => {
+            arrayThemes = [];
+            querySnapshot.forEach((doc) => {
+                //console.log(`${doc.id} => ${doc.data()}`);
+                console.log(doc.get("name"));
+                arrayThemes.push(doc);
+            });
+
+            populateSelectThemes(arrayThemes);
+        });
+    }
+
+
+    /** get the products **/
+    function getProducts(keyTheme) {
+        var arrayProducts = [];
+        db.collection("themes").doc(keyTheme).collection("products").get().then((querySnapshot) => {
+            arrayProducts = [];
+            querySnapshot.forEach((doc) => {
+                //console.log(`${doc.id} => ${doc.data()}`);
+                console.log(doc.get("name"));
+                arrayProducts.push(doc);
+            });
+
+            populateSelectProducts(arrayProducts);
+        });
+    }
+
+    /** populate the theme select **/
+    function populateSelectThemes(arrayThemes) {
+        themeSelect.innerHTML = "";
+        console.log("\npopulating Theme Select...");
+        for (i = 0; i < arrayThemes.length; i++) {
+            var nameTheme = arrayThemes[i].get("name");
+            var opt = document.createElement("option");
+            opt.value = arrayThemes[i].id;
+            opt.innerHTML = nameTheme; // whatever property it has
+
+            // then append it to the select element
+            themeSelect.appendChild(opt);
+        }
+
+        var keyTheme = themeSelect.options[themeSelect.selectedIndex].value;
+        getProducts(keyTheme);
+
+    }
+
+    /** populate the product select **/
+    function populateSelectProducts(arrayProducts) {
+        productSelect.innerHTML = "";
+        console.log("\npopulating Products Select...");
+        for (i = 0; i < arrayProducts.length; i++) {
+            var nameProduct = arrayProducts[i].get("name");
+            var opt = document.createElement("option");
+            opt.value = arrayProducts[i].id;
+            opt.innerHTML = nameProduct; // whatever property it has
+
+            // then append it to the select element
+            productSelect.appendChild(opt);
+        }
+
+    }
+</script>
+
+
+<script>
+    $('#product-form').on('submit', function (e) {
+        console.log('\nclicked !')
+        e.preventDefault();
+
+        var keyTheme = themeSelect.options[themeSelect.selectedIndex].value;
+        var keyProduct = productSelect.options[productSelect.selectedIndex].value;
+
+        var name = $("#name").val();
+        var description = $("#description").val();
+
+        if(validateData(name, description)){
+            populateDB(keyTheme, keyProduct, name, description);
+        }
+        console.log(keyTheme+"\n"+keyProduct+"\n"+name+"\n"+description);
+
+        /** validate the data **/
+        function validateData(name, description) {
+            var correct = true;
+            if ((name == "") || (description == "")) {
+                console.log("data not valid.");
+                correct = false;
+            }
+            return correct;
+        }
+
+        /** populate the database **/
+        function populateDB(keyTheme, keyProduct, name, description) {
+            console.log("\npopulating the database...\n")
+            // Add a new product with a generated id.
+            db.collection("themes").doc(keyTheme).collection("products").doc(keyProduct).collection("inner_products").add({
+                name: name,
+                description: description
+            })
+                .then(function(docRef) {
+                    console.log("Document written with ID: ", docRef.id);
+                    alert("Produit ajouté avec succès");
+                })
+                .catch(function(error) {
+                    console.error("Error adding document: ", error);
+                    alert("Impossible d'ajouter le produit");
+                });
+        }
+    });
+</script>
+
+</body>
+</html>

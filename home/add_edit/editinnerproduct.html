@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Modifier sous produit</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->
+	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/iconic/css/material-design-iconic-font.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/daterangepicker/daterangepicker.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/noui/nouislider.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="css/util.css">
+	<link rel="stylesheet" type="text/css" href="css/main_inner.css">
+<!--===============================================================================================-->
+</head>
+<body>
+
+
+	<div class="container-contact100">
+		<div class="wrap-contact100">
+			<form class="contact100-form validate-form" id="product-form">
+				<span class="contact100-form-title">
+					Modifier sous produit
+				</span>
+				
+				<!-- Nom -->
+				<div class="wrap-input100 validate-input bg1" data-validate="Entrez le nom du produit">
+					<span class="label-input100">Nom du sous produit *</span>
+					<input class="input100" type="text" id="name" name="name" placeholder="Entrez le nom du produit">
+				</div>
+
+
+                <!-- Description -->
+				<div class="wrap-input100 validate-input bg0 rs1-alert-validate" data-validate = "Entrez la description du produit">
+					<span class="label-input100">Description *</span>
+					<textarea class="input100" id="description" name="message" placeholder="Description du sous produit..."></textarea>
+				</div>
+
+				<div class="container-contact100-form-btn">
+					<button class="contact100-form-btn">
+						<span>
+							Modifier
+							<i class="fa fa-long-arrow-right m-l-7" aria-hidden="true"></i>
+						</span>
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+
+    <script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-firestore.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-auth.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/animsition/js/animsition.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/bootstrap/js/popper.js"></script>
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/select2/select2.min.js"></script>
+
+	<script>
+		$(".js-select2").each(function(){
+			$(this).select2({
+				minimumResultsForSearch: 20,
+				dropdownParent: $(this).next('.dropDownSelect2')
+			});
+
+
+			$(".js-select2").each(function(){
+				$(this).on('select2:close', function (e){
+					if($(this).val() == "Please chooses") {
+						$('.js-show-service').slideUp();
+					}
+					else {
+						$('.js-show-service').slideUp();
+						$('.js-show-service').slideDown();
+					}
+				});
+			});
+		})
+	</script>
+<!--===============================================================================================-->
+	<script src="vendor/daterangepicker/moment.min.js"></script>
+	<script src="vendor/daterangepicker/daterangepicker.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/countdowntime/countdowntime.js"></script>
+<!--===============================================================================================-->
+
+<!--===============================================================================================-->
+	<script src="js/main.js"></script>
+    <script src="js/firebaseApp.js"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-23581568-13"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-23581568-13');
+</script>
+
+<script>
+    /**** On change listener (selects) ****/
+
+</script>
+
+
+<script>
+    var db = firebase.firestore();
+    var themeKey;
+    var productKey;
+    var innerProductKey;
+
+    getArgs();
+    getInnerProductDetails();
+
+    function getArgs() {
+        var queryString = decodeURIComponent(window.location.search);
+        queryString = queryString.substring(1);
+        var queries = queryString.split("&");
+
+        themeKey = queries[0].replace("keyTheme=", "");
+        productKey = queries[1].replace("keyProduct=", "");
+        innerProductKey = queries[2].replace("keyInnerProduct=", "");
+
+    }
+
+    function getInnerProductDetails() {
+        var docRef = db.collection("themes").doc(themeKey).collection("products").doc(productKey).collection("inner_products").doc(innerProductKey);
+        docRef.get().then(function(doc) {
+            if (doc.exists) {
+                console.log("Document data:", doc.data());
+                populateFields(doc);
+            } else {
+                // doc.data() will be undefined in this case
+                console.log("No such document!");
+            }
+        }).catch(function(error) {
+            console.log("Error getting document:", error);
+        });
+    }
+
+    function populateFields(doc) {
+        var nameTV = document.getElementById('name');
+        var descTV = document.getElementById('description');
+
+        nameTV.value = doc.get("name");
+        descTV.innerHTML = doc.get("description");
+    }
+
+</script>
+
+
+<script>
+
+    $('#product-form').on('submit', function (e) {
+        console.log('\nclicked !')
+        e.preventDefault();
+
+        var name = $("#name").val();
+        var desc = $("#description").val();
+
+        if(validateData(name, desc)){
+            populateDB(name, desc);
+        }
+        console.log("Name : "+name+"\nDesc : "+desc);
+
+        /** validate the data **/
+        function validateData(name, desc) {
+            var correct = true;
+            if ((name == "")||(desc == "")) {
+                console.log("data not valid.");
+                correct = false;
+            }
+            return correct;
+        }
+
+        /** populate the database **/
+        function populateDB(name, desc) {
+            console.log("\npopulating the database...\n")
+
+            return db.collection("themes").doc(themeKey).collection("products").doc(productKey)
+             .collection("inner_products").doc(innerProductKey).update({
+                name: name,
+                description: desc
+            }).then(function() {
+                console.log("Document successfully updated!");
+                alert("Sous produit modifié avec succès");
+            }).catch(function(error) {
+                // The document probably doesn't exist.
+                console.error("Error updating document: ", error);
+                alert("Impossible de modifier le sous produit");
+            });
+        }
+
+    });
+</script>
+
+</body>
+</html>

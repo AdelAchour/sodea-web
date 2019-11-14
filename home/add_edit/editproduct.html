@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Modifier produit</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->
+	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/iconic/css/material-design-iconic-font.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/daterangepicker/daterangepicker.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/noui/nouislider.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="css/util.css">
+	<link rel="stylesheet" type="text/css" href="css/main.css">
+<!--===============================================================================================-->
+</head>
+<body>
+
+
+	<div class="container-contact100">
+		<div class="wrap-contact100">
+			<form class="contact100-form validate-form" id="product-form">
+				<span class="contact100-form-title">
+					Modifier produit
+				</span>
+				
+				<!-- Nom -->
+				<div class="wrap-input100 validate-input bg1" data-validate="Entrez le nom du produit">
+					<span class="label-input100">Nom du produit *</span>
+					<input class="input100" type="text" id="name" name="name" placeholder="Entrez le nom du produit">
+				</div>
+
+
+				<div class="container-contact100-form-btn">
+					<button class="contact100-form-btn">
+						<span>
+							Modifier
+							<i class="fa fa-long-arrow-right m-l-7" aria-hidden="true"></i>
+						</span>
+					</button>
+				</div>
+
+			</form>
+
+            <!--<span><a href="#" id="deleteSpan" class="contact100-delete-res">Supprimer</a></span>-->
+
+		</div>
+	</div>
+
+
+    <script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-firestore.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-auth.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/animsition/js/animsition.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/bootstrap/js/popper.js"></script>
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/select2/select2.min.js"></script>
+
+	<script>
+		$(".js-select2").each(function(){
+			$(this).select2({
+				minimumResultsForSearch: 20,
+				dropdownParent: $(this).next('.dropDownSelect2')
+			});
+
+
+			$(".js-select2").each(function(){
+				$(this).on('select2:close', function (e){
+					if($(this).val() == "Please chooses") {
+						$('.js-show-service').slideUp();
+					}
+					else {
+						$('.js-show-service').slideUp();
+						$('.js-show-service').slideDown();
+					}
+				});
+			});
+		})
+	</script>
+<!--===============================================================================================-->
+	<script src="vendor/daterangepicker/moment.min.js"></script>
+	<script src="vendor/daterangepicker/daterangepicker.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/countdowntime/countdowntime.js"></script>
+<!--===============================================================================================-->
+
+<!--===============================================================================================-->
+	<script src="js/main.js"></script>
+    <script src="js/firebaseApp.js"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-23581568-13"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-23581568-13');
+</script>
+
+<script>
+    /**** On change listener (selects) ****/
+
+</script>
+
+
+<script>
+    var db = firebase.firestore();
+    var themeKey;
+    var productKey;
+
+    getArgs();
+    getProductDetails();
+
+    function getArgs() {
+        var queryString = decodeURIComponent(window.location.search);
+        queryString = queryString.substring(1);
+        var queries = queryString.split("&");
+
+        themeKey = queries[0].replace("keyTheme=", "");
+        productKey = queries[1].replace("keyProduct=", "");
+
+    }
+
+    function getProductDetails() {
+        var docRef = db.collection("themes").doc(themeKey).collection("products").doc(productKey);
+        docRef.get().then(function(doc) {
+            if (doc.exists) {
+                console.log("Document data:", doc.data());
+                populateFields(doc);
+            } else {
+                // doc.data() will be undefined in this case
+                console.log("No such document!");
+            }
+        }).catch(function(error) {
+            console.log("Error getting document:", error);
+        });
+    }
+
+    function populateFields(doc) {
+        var nameTV = document.getElementById('name');
+
+        nameTV.value = doc.get("name");
+    }
+
+</script>
+
+
+<script>
+
+    $('#product-form').on('submit', function (e) {
+        console.log('\nclicked !')
+        e.preventDefault();
+
+        var name = $("#name").val();
+
+        if(validateData(name)){
+            populateDB(name);
+        }
+        console.log("Name : "+name);
+
+        /** validate the data **/
+        function validateData(name) {
+            var correct = true;
+            if ((name == "")) {
+                console.log("data not valid.");
+                correct = false;
+            }
+            return correct;
+        }
+
+        /** populate the database **/
+        function populateDB(name) {
+            console.log("\npopulating the database...\n")
+
+            return db.collection("themes").doc(themeKey).collection("products").doc(productKey).update({
+                name: name,
+            }).then(function() {
+                console.log("Document successfully updated!");
+                alert("Produit modifié avec succès");
+            }).catch(function(error) {
+                // The document probably doesn't exist.
+                console.error("Error updating document: ", error);
+                alert("Impossible de modifier le produit");
+            });
+        }
+
+    });
+
+
+    /*$('#deleteSpan').click( function(e){
+        e.preventDefault();
+
+        console.log("\nkeys : "+themeKey+" | "+productKey);
+
+        var qst = confirm("Ce produit sera définitivement supprimé. Cette action est irreversible.\nContinuer?");
+        if (qst == true) {
+
+            db.collection("themes").doc(themeKey).collection("products").doc(productKey).delete().then(function() {
+                console.log("Document successfully deleted!");
+                window.open("editproduct.html","_self");
+            }).catch(function(error) {
+                console.error("Error removing document: ", error);
+                alert("Impossible de supprimer le produit");
+            });
+
+
+        }
+
+        return false;
+    });*/
+</script>
+
+</body>
+</html>

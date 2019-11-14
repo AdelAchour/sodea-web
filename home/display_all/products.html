@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Liste des produits</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->	
+	<link rel="icon" type="image/png" href="images/icons/favicon_.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/perfect-scrollbar/perfect-scrollbar.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="css/util.css">
+	<link rel="stylesheet" type="text/css" href="css/main_themes.css">
+<!--===============================================================================================-->
+    <style>
+        h8:hover{
+           text-decoration: underline;
+        }
+    </style>
+
+</head>
+<body>
+	
+	<div class="limiter">
+		<div class="container-table100">
+			<div class="wrap-table100">
+                    <!-- *** START TABLE *** -->
+                    <div class="table" id="divTable">
+
+                        <!-- ** START HEADER ** -->
+						<div class="row header">
+							<div class="cell" style="width: 70%;">
+								Nom du produit
+							</div>
+                            <div class="cell" style="width: 30%;">
+                                Action sur le produit
+                            </div>
+						</div>
+                        <!-- ** END HEADER ** -->
+
+					</div>
+                <!-- *** END TABLE *** -->
+			</div>
+		</div>
+	</div>
+
+
+
+
+	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-firestore.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-auth.js"></script>
+<!--===============================================================================================-->	
+	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/bootstrap/js/popper.js"></script>
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+	<script src="js/main.js"></script>
+	<script src="js/firebaseApp.js"></script>
+
+
+<script>
+    var db = firebase.firestore();
+    var themeKey;
+    function getArgs() {
+        var queryString = decodeURIComponent(window.location.search);
+        queryString = queryString.substring(1);
+        var queries = queryString.split("&");
+
+        themeKey = queries[0].replace("key=", "");
+    }
+
+    getArgs();
+    getProducts();
+
+    /** get the theme's products **/
+    function getProducts() {
+        console.log("key : "+themeKey)
+        var arrayProducts = [];
+        db.collection("themes").doc(themeKey).collection("products").get().then((querySnapshot) => {
+            arrayProducts = [];
+            querySnapshot.forEach((doc) => {
+                //console.log(`${doc.id} => ${doc.data()}`);
+                console.log(doc.get("name"));
+                arrayProducts.push(doc);
+            });
+            populateTable(arrayProducts);
+        });
+    }
+
+
+    /** populate the table **/
+    function populateTable(arrayProducts) {
+        initializeTable();
+        div_row = "";
+
+        for (i = 0; i < arrayProducts.length; i++) {
+            var keyProduct = arrayProducts[i].id;
+            var name = arrayProducts[i].get("name");
+
+            div_row = div_row + '<div class="row"><div class="cell" title="Nom" id="'+keyProduct+'" onclick="openWindow(this.id)" >'+name+'</div>' +
+                '<div class="cell" title="Action"><h8 style="display: inline-block; width: 50%;" id="'+keyProduct+'" onclick="editProduct(this.id)">Modifier</h8>' +
+                '<h8 id="'+keyProduct+'" onclick="deleteProduct(this.id)" style="color:darkred;">Supprimer</h8></div></div>'
+
+        }
+        $('#divTable').append(div_row);
+    }
+
+    function initializeTable() {
+        var divTable = document.getElementById('divTable');
+        divTable.innerHTML = "";
+        divTable.innerHTML = '<div class="row header"><div class="cell" style="width: 70%;">Nom du produit</div>' +
+            '<div class="cell" style="width: 30%;">Action sur le produit</div></div>';
+    }
+
+    function editProduct(keyProduct){
+        var linkEdit = "../add_edit/editproduct.html?keyTheme="+themeKey+"&keyProduct="+keyProduct;
+        window.open(linkEdit,"_self");
+    }
+
+    function deleteProduct(keyProduct){
+        var qst = confirm("Ce produit sera définitivement supprimé. Cette action est irreversible.\nContinuer?");
+        if (qst == true) {
+
+            db.collection("themes").doc(themeKey).collection("products").doc(keyProduct).delete().then(function() {
+                console.log("Document successfully deleted!");
+                getProducts()
+            }).catch(function(error) {
+                console.error("Error removing document: ", error);
+                alert("Impossible de supprimer le produit");
+            });
+
+        }
+    }
+
+    function openWindow(keyProduct){
+        var link = "innerproducts.html?keyTheme="+themeKey+"&keyProduct="+keyProduct;
+        window.open(link,"_self");
+    }
+
+
+    function populateTable2(arrayProducts) {
+        var divTable = document.getElementById('divTable');
+
+        for (i = 0; i < arrayProducts.length; i++) {
+            var keyProduct = arrayProducts[i].id;
+            var name = arrayProducts[i].get("name");
+
+            /** div name **/
+            var divName = document.createElement("div");
+            divName.className = "cell";
+            divName.setAttribute('title', 'Nom');
+            //divName.setAttribute('id', keyProduct);
+            divName.setAttribute('onclick', 'alert(keyProduct)')
+            //divName.innerHTML = name;
+
+            var ahref = document.createElement("a");
+            var link = "innerproducts.html?keyTheme="+themeKey+"&keyProduct="+keyProduct;
+            //ahref.setAttribute('href', link);
+            ahref.setAttribute('id', keyProduct);
+            ahref.setAttribute('onclick', 'this.id');
+            ahref.innerHTML = name;
+            divName.appendChild(ahref);
+
+
+            /** div action **/
+            var divAction = document.createElement("div");
+            divAction.className = "cell";
+            divAction.setAttribute('title', 'Action');
+
+            var ahrefEdit = document.createElement("a");
+            var linkEdit = "../add_edit/editproduct.html?keyTheme="+themeKey+"&keyProduct="+keyProduct;
+            ahrefEdit.setAttribute('href', linkEdit);
+            ahrefEdit.innerHTML = "Modifier";
+            divAction.appendChild(ahrefEdit);
+
+
+            /** append everything **/
+            var divRow = document.createElement("div");
+            divRow.className = "row";
+            divRow.appendChild(divName);
+            divRow.appendChild(divAction);
+
+            divTable.appendChild(divRow);
+
+        }
+    }
+
+</script>
+
+
+</body>
+</html>

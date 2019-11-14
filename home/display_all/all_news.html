@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Liste des actualités</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->	
+	<link rel="icon" type="image/png" href="images/icons/envelope.ico"/>
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/perfect-scrollbar/perfect-scrollbar.css">
+<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="css/util.css">
+	<link rel="stylesheet" type="text/css" href="css/main_actu.css">
+<!--===============================================================================================-->
+    <style>
+        h8:hover{
+            text-decoration: underline;
+        }
+    </style>
+
+
+</head>
+<body>
+	
+	<div class="limiter">
+
+        <ul class="nav justify-content-end">
+            <li class="nav-item">
+                <a class="nav-link active" href="../actu/send_actu.html">Ajouter une actualité</a>
+            </li>
+        </ul>
+
+		<div class="container-table100">
+			<div class="wrap-table100">
+
+                    <!-- *** START TABLE *** -->
+                    <div class="table" id="divTable">
+
+                        <!-- ** START HEADER ** -->
+						<div class="row header">
+							<div class="cell" style="width: 20%;">
+								Titre
+							</div>
+							<div class="cell" style="width: 30%; padding-left: 20px; padding-right: 20px;">
+								Contenu
+							</div>
+                            <div class="cell" style="width: 15%;">
+                                Date création
+                            </div>
+                            <div class="cell" style="width: 15%;">
+                                Date modification
+                            </div>
+                            <div class="cell" style="width: 20%;">
+                                Action
+                            </div>
+						</div>
+                        <!-- ** END HEADER ** -->
+
+					</div>
+                <!-- *** END TABLE *** -->
+
+			</div>
+		</div>
+	</div>
+
+
+
+
+	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-firestore.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-auth.js"></script>
+<!--===============================================================================================-->	
+	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/bootstrap/js/popper.js"></script>
+	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+<!--===============================================================================================-->
+	<script src="vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+	<script src="js/main.js"></script>
+	<script src="js/firebaseApp.js"></script>
+
+
+<script>
+    var db = firebase.firestore();
+
+    getNews();
+
+    /** get the inner products **/
+    function getNews() {
+        var arrayNews = [];
+        db.collection("news").get().then((querySnapshot) => {
+            arrayNews = [];
+            querySnapshot.forEach((doc) => {
+                //console.log(`${doc.id} => ${doc.data()}`);
+                console.log(doc.get("title"));
+                arrayNews.push(doc);
+            });
+            populateTable(arrayNews);
+        });
+    }
+
+    /** populate the products **/
+    function populateTable(arrayNews) {
+        initializeTable();
+        div_row = "";
+
+        for (i = 0; i < arrayNews.length; i++) {
+            var key = arrayNews[i].id;
+            var title = arrayNews[i].get("title");
+            var content = arrayNews[i].get("content");
+            var dateCreation = arrayNews[i].get("date");
+            var dateEdit = arrayNews[i].get("date_edit");
+
+            div_row = div_row +
+                '<div class="row">' +
+                '<div class="cell" title="Titre" id="'+key+'" onclick="openWindow(this.id)">'+title+'</div>' +
+                '<div class="cell" title="Contenu" style="padding-left: 20px; padding-right: 20px">'+content+'</div>' +
+                '<div class="cell" title="Date de création">'+dateCreation+'</div>' +
+                '<div class="cell" title="Date de modification">'+dateEdit+'</div>' +
+                '<div class="cell" title="Action">' +
+                '<h8 style="display: inline-block; width: 50%;" id="'+key+'" onclick="editNews(this.id)">Modifier</h8>' +
+                '<h8 id="'+key+'" onclick="deleteNews(this.id)" style="color:darkred;">Supprimer</h8>' +
+                '</div>' +
+                '</div>'
+
+        }
+        $('#divTable').append(div_row);
+    }
+
+    function initializeTable() {
+        var divTable = document.getElementById('divTable');
+        divTable.innerHTML = "";
+        divTable.innerHTML = '<div class="row header">' +
+            '<div class="cell" style="width: 20%; ">Titre</div>' +
+            '<div class="cell" style="width: 30%; padding-left: 20px; padding-right: 20px">Contenu</div>' +
+            '<div class="cell" style="width: 15%;">Date création</div>' +
+            '<div class="cell" style="width: 15%;">Date modification</div>' +
+            '<div class="cell" style="width: 20%;">Action</div>' +
+            '</div>';
+    }
+
+    function editNews(keyNews){
+        var linkEdit = "../add_edit/editnews.html?keyNews="+keyNews;
+        window.open(linkEdit,"_self");
+    }
+
+    function deleteNews(keyNews){
+        var qst = confirm("Cette actualité sera définitivement supprimé. Cette action est irreversible.\nContinuer?");
+        if (qst == true) {
+
+            db.collection("news").doc(keyNews).delete().then(function() {
+                console.log("Document successfully deleted!");
+                getNews()
+            }).catch(function(error) {
+                console.error("Error removing document: ", error);
+                alert("Impossible de supprimer l'actualité");
+            });
+
+
+        }
+    }
+
+    function openWindow(keyNews){
+        var link = "../add_edit/displaynews.html?keyNews="+keyNews;
+        window.open(link,"_self");
+    }
+
+
+    function populateTable2(arrayInnerProducts) {
+        var divTable = document.getElementById('divTable');
+
+        for (i = 0; i < arrayInnerProducts.length; i++) {
+            var key = arrayInnerProducts[i].id;
+            var name = arrayInnerProducts[i].get("name");
+            var desc = arrayInnerProducts[i].get("description");
+
+            var divName = document.createElement("div");
+            divName.className = "cell";
+            divName.setAttribute('title', 'Nom');
+            //divName.innerHTML = name;
+
+            var ahref = document.createElement("a");
+            var link = "../add_edit/editinnerproduct.html?keyTheme="+themeKey+"&keyProduct="+productKey+"&keyInnerProduct="+key;
+            ahref.setAttribute('href', link);
+            ahref.innerHTML = name;
+            divName.appendChild(ahref);
+
+            var divDesc = document.createElement("div");
+            divDesc.className = "cell";
+            divDesc.setAttribute('title', 'Description');
+            divDesc.innerHTML = desc;
+
+
+            var divRow = document.createElement("div");
+            divRow.className = "row";
+            divRow.appendChild(divName);
+            divRow.appendChild(divDesc);
+
+            divTable.appendChild(divRow);
+        }
+    }
+</script>
+
+
+</body>
+</html>
