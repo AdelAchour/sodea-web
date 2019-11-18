@@ -27,6 +27,10 @@
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+		  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+		  crossorigin="anonymous">
 <!--===============================================================================================-->
 </head>
 <body>
@@ -63,6 +67,23 @@
 					<span class="label-input100">Description *</span>
 					<textarea class="input100" id="description" name="message" placeholder="Description du sous produit..."></textarea>
 				</div>-->
+
+                <!-- Alert Image -->
+                <div style="display: none" class="alert alert-danger" role="alert" id="alertImg">
+                </div>
+
+                <!-- Alert Good -->
+                <div style="display: none" class="alert alert-success alert-dismissible fade show" role="alert" id="alertGood">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <!-- Spinner -->
+                <button class="btn btn-primary" type="button" disabled style="display: none" id="spinner">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Chargement...
+                </button>
 
 				<div class="container-contact100-form-btn">
 					<button class="contact100-form-btn">
@@ -192,13 +213,18 @@
 <script>
 
     $('#product-form').on('submit', function (e) {
-        console.log('\nclicked !')
+        console.log('\nclicked !');
         e.preventDefault();
 
         var keyTheme = themeSelect.options[themeSelect.selectedIndex].value;
         var name = $("#name").val();
 
+        const alertImg = document.getElementById('alertImg');
+        const alertGood = document.getElementById('alertGood');
+        const spinner = document.getElementById('spinner');
+
         if(validateData(name)){
+            spinner.style.display = "block";
             populateDB(keyTheme, name);
         }
         console.log(keyTheme+"\n"+keyProduct+"\n"+name+"\n"+description);
@@ -206,7 +232,7 @@
         /** validate the data **/
         function validateData(name) {
             var correct = true;
-            if (name == "") {
+            if (name === "") {
                 console.log("data not valid.");
                 correct = false;
             }
@@ -215,18 +241,26 @@
 
         /** populate the database **/
         function populateDB(keyTheme, name) {
-            console.log("\npopulating the database...\n")
+            console.log("\npopulating the database...\n");
             // Add a new product with a generated id.
             db.collection("themes").doc(keyTheme).collection("products").add({
                 name: name
             })
                 .then(function(docRef) {
                     console.log("Document written with ID: ", docRef.id);
-                    alert("Produit ajouté avec succès");
+                    spinner.style.display = "none";
+                    alertImg.style.display = "none";
+
+                    alertGood.innerText = "Produit ajouté avec succès.";
+                    alertGood.style.display = "block";
                 })
                 .catch(function(error) {
                     console.error("Error adding document: ", error);
-                    alert("Impossible d'ajouter le produit");
+                    spinner.style.display = "none";
+                    alertGood.style.display = "none";
+
+                    alertImg.innerText = "Impossible d'ajouter le produit. Veuillez réessayer.";
+                    alertImg.style.display = "block";
                 });
         }
     });

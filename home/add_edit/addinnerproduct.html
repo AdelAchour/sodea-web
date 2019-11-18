@@ -27,6 +27,10 @@
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main_inner.css">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+          crossorigin="anonymous">
 <!--===============================================================================================-->
 </head>
 <body>
@@ -73,6 +77,30 @@
 					<textarea class="input100" id="description" name="message" placeholder="Description du sous produit..."></textarea>
 				</div>
 
+				<!-- Image -->
+				<div class="wrap-input100 validate-input bg0 rs1-alert-validate" data-validate = "Entrez la description du produit">
+					<span class="label-input100">Image *<br><br></span>
+					<input type="file" name="pic" accept="image/*" id="image_picker">
+				</div>
+
+                <!-- Alert Image -->
+                <div style="display: none" class="alert alert-danger" role="alert" id="alertImg">
+                </div>
+
+                <!-- Alert Good -->
+                <div style="display: none" class="alert alert-success alert-dismissible fade show" role="alert" id="alertGood">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <!-- Spinner -->
+                <button class="btn btn-primary" type="button" disabled style="display: none" id="spinner">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Chargement...
+                </button>
+
+                <!-- Button -->
 				<div class="container-contact100-form-btn">
 					<button class="contact100-form-btn">
 						<span>
@@ -89,6 +117,7 @@
     <script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-firestore.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-auth.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-storage.js"></script>
 <!--===============================================================================================-->
 	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
 <!--===============================================================================================-->
@@ -98,6 +127,8 @@
 	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
 <!--===============================================================================================-->
 	<script src="vendor/select2/select2.min.js"></script>
+<!--===============================================================================================-->
+
 
 	<script>
 		$(".js-select2").each(function(){
@@ -142,6 +173,7 @@
 
 <script>
     /**** On change listener (selects) ****/
+    var fileToUpload = "";
 
     /** theme select listener **/
     $("#themeSelect").change(function () {
@@ -160,6 +192,17 @@
         console.log("Key Product : "+keyProduct);
 
         //document.getElementById("loader").style.display = "block";
+    });
+
+    var img = document.getElementById('image_picker');
+    img.addEventListener('change', function (e) {
+        var file = e.target.files[0];
+        fileToUpload = file;
+        if (typeof file === 'undefined'){
+            fileToUpload = "";
+        }
+        console.log("e : "+fileToUpload);
+        console.log("file : "+fileToUpload.name);
 
     });
 </script>
@@ -169,6 +212,7 @@
     var db = firebase.firestore();
     var themeSelect = document.getElementById('themeSelect');
     var productSelect = document.getElementById('productSelect');
+    var storageRef = firebase.storage().ref();
 
     getThemes();
 
@@ -218,6 +262,7 @@
         }
 
         var keyTheme = themeSelect.options[themeSelect.selectedIndex].value;
+        console.log("selected theme : "+keyTheme);
         getProducts(keyTheme);
 
     }
@@ -235,14 +280,13 @@
             // then append it to the select element
             productSelect.appendChild(opt);
         }
-
     }
 </script>
 
 
 <script>
     $('#product-form').on('submit', function (e) {
-        console.log('\nclicked !')
+        console.log('\nclicked !');
         e.preventDefault();
 
         var keyTheme = themeSelect.options[themeSelect.selectedIndex].value;
@@ -251,36 +295,120 @@
         var name = $("#name").val();
         var description = $("#description").val();
 
-        if(validateData(name, description)){
-            populateDB(keyTheme, keyProduct, name, description);
+        const alertImg = document.getElementById('alertImg');
+        const alertGood = document.getElementById('alertGood');
+        const spinner = document.getElementById('spinner');
+
+        console.log("image picker : "+fileToUpload);
+
+        if(validateData(name, description, fileToUpload)){
+            spinner.style.display = "block";
+
+            var docRef = db.collection("themes").doc(keyTheme);
+            docRef.get().then(function(doc) {
+                if (doc.exists) {
+                    console.log("Theme data:", doc.data());
+                    getSelectedProduct(doc.get("code"));
+                } else {
+                    console.log("No such document!");
+                }
+
+                /** get product name **/
+                function getSelectedProduct(code) {
+                    var docRef = db.collection("themes").doc(keyTheme).collection("products").doc(keyProduct);
+                    docRef.get().then(function(doc) {
+                        if (doc.exists) {
+                            console.log("Product data:", doc.data());
+                            var path = code + "/" + doc.get("name").toLowerCase().replace(new RegExp(" ", 'g'), "_") + "/" + name.toLowerCase();
+                            uploadImage(path, fileToUpload);
+                        } else {
+                            console.log("No such document!");
+                        }
+                    }).catch(function(error) { console.log("Error getting document:", error);});
+                /** get product name **/
+
+                }
+            }).catch(function(error) {
+                console.log("Error getting document:", error);
+            });
         }
+
         console.log(keyTheme+"\n"+keyProduct+"\n"+name+"\n"+description);
 
         /** validate the data **/
-        function validateData(name, description) {
+        function validateData(name, description, file) {
             var correct = true;
-            if ((name == "") || (description == "")) {
+            if ((name === "") || (description === "") || (file === "")) {
+                if (file === ""){
+                    alertImg.innerText = "Vous devez importer une image du produit";
+                    alertImg.style.display = "block";
+                }
+                else {
+                    alertImg.style.display = "none";
+                }
                 console.log("data not valid.");
                 correct = false;
             }
+            if (file !== ""){
+                console.log("size : "+file.size);
+                if (file.size > 200000){
+                    console.log("big pic.");
+                    alertImg.innerText = "La taille de l'image doit être inférieur à 200ko";
+                    alertImg.style.display = "block";
+                    correct = false;
+                }
+                else {
+                    alertImg.style.display = "none";
+                }
+            }
+
             return correct;
         }
 
+
+        /** upload image to firebase storage **/
+        function uploadImage(path, file) {
+            console.log("\nuploading the image to "+path+".jpg ...\n");
+            var imgRef = storageRef.child(path+'.jpg');
+            imgRef.put(file).then(function(snapshot) {
+                console.log('Uploaded a blob or file!');
+                alertImg.style.display = "none";
+                populateDB(keyTheme, keyProduct, name, description, path);
+            }).catch(function(error) {
+                console.error("Error adding document: ", error);
+                spinner.style.display = "none";
+                alertGood.style.display = "none";
+
+                alertImg.innerText = "Impossible d'ajouter le sous produit. Veuillez réessayer.";
+                alertImg.style.display = "block";
+            });
+        }
+
+
         /** populate the database **/
-        function populateDB(keyTheme, keyProduct, name, description) {
-            console.log("\npopulating the database...\n")
+        function populateDB(keyTheme, keyProduct, name, description, path) {
+            console.log("\npopulating the database...\n");
             // Add a new product with a generated id.
             db.collection("themes").doc(keyTheme).collection("products").doc(keyProduct).collection("inner_products").add({
                 name: name,
-                description: description
+                description: description,
+                pic: path+".jpg"
             })
                 .then(function(docRef) {
                     console.log("Document written with ID: ", docRef.id);
-                    alert("Produit ajouté avec succès");
+                    spinner.style.display = "none";
+                    alertImg.style.display = "none";
+
+                    alertGood.innerText = "Sous produit ajouté avec succès.";
+                    alertGood.style.display = "block";
                 })
                 .catch(function(error) {
                     console.error("Error adding document: ", error);
-                    alert("Impossible d'ajouter le produit");
+                    spinner.style.display = "none";
+                    alertGood.style.display = "none";
+
+                    alertImg.innerText = "Impossible d'ajouter le sous produit. Veuillez réessayer.";
+                    alertImg.style.display = "block";
                 });
         }
     });
