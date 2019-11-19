@@ -25,6 +25,10 @@
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+		  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+		  crossorigin="anonymous">
 <!--===============================================================================================-->
 </head>
 <body>
@@ -37,19 +41,38 @@
 					Nouvelle actualité
 				</span>
 
+                <!-- Titre -->
 				<div class="wrap-input100 validate-input" data-validate = "Valid title is required">
 					<label class="label-input100" for="title">Titre de l'actualité</label>
 					<input id="title" class="input100" type="text" name="title" placeholder="Titre bref...">
 					<span class="focus-input100"></span>
 				</div>
-				
 
+                <!-- Contenu -->
 				<div class="wrap-input100 validate-input" data-validate = "Message is required">
 					<label class="label-input100" for="message">Contenu</label>
 					<textarea id="message" class="input100" name="message" placeholder="Contenu de l'actualité..."></textarea>
 					<span class="focus-input100"></span>
 				</div>
 
+                <!-- Alert Bad -->
+                <div style="display: none" class="alert alert-danger" role="alert" id="alertBad">
+                </div>
+
+                <!-- Alert Good -->
+                <div style="display: none" class="alert alert-success alert-dismissible fade show" role="alert" id="alertGood">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <!-- Spinner -->
+                <button class="btn btn-primary" type="button" disabled style="display: none" id="spinner">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Chargement...
+                </button>
+
+                <!-- Button -->
                 <div class="container-contact100-form-btn">
                     <button class="contact100-form-btn">
                         Envoyer
@@ -128,15 +151,22 @@
 <script>
     var db = firebase.firestore();
 
+    const alertBad = document.getElementById('alertBad');
+    const alertGood = document.getElementById('alertGood');
+    const spinner = document.getElementById('spinner');
+
     $('#actu-form').on('submit', function (e) {
         console.log('\nclicked !')
         e.preventDefault();
+
+
 
         var title = $("#title").val();
         var content = $("#message").val();
 
         /** check data **/
         if(validateData(title, content)){
+            spinner.style.display = "block";
             var date = getDateTime();
             populateDB(title, content, date);
         }
@@ -149,6 +179,27 @@
                 correct = false;
             }
             return correct;
+        }
+
+        /** populate the database **/
+        function populateDB(title, content, date) {
+            console.log("\npopulating the database...\n")
+            // Add a new product with a generated id.
+            db.collection("news").add({
+                title: title,
+                content: content,
+                date: date,
+                date_edit: "-"
+            })
+                .then(function(docRef) {
+                    console.log("Document written with ID: ", docRef.id);
+                    dismissBadAlert();
+                    sendNotif(title, content, date);
+                })
+                .catch(function(error) {
+                    console.error("Error adding document: ", error);
+                    displayBadAlert();
+                });
         }
 
         /** send a notif **/
@@ -172,33 +223,44 @@
                     'Authorization' : 'key=AAAAZKJA20s:APA91bEpefYIbg7JM97p0QsHmXxf1A-aFmAdtOuZQr76a9KcKCQJLzHsyg5noLVLjD_t1Dmz6UQW8K-URm4_L16onpkeXglgYOqQ9CrgwVmZ-P3WpScyjPwr7A-o5-eHfKO68MDm6uD_',
                     'Content-Type' : 'application/json'
                 }
-            }).done(function(response) {
-                alert("Actualité envoyée avec succès");
+            }).then(function (response) {
+                console.log("send notif response : "+response);
+                displayGoodAlert();
+            }).catch(function (error) {
+                console.log("send notif error : "+error);
+                displayBadAlert();
             });
         }
 
-        /** populate the database **/
-        function populateDB(title, content, date) {
-            console.log("\npopulating the database...\n")
-            // Add a new product with a generated id.
-            db.collection("news").add({
-                title: title,
-                content: content,
-                date: date,
-                date_edit: "-"
-            })
-                .then(function(docRef) {
-                    console.log("Document written with ID: ", docRef.id);
-                    sendNotif(title, content, date);
-                    //alert("Actualité envoyée avec succès");
-                })
-                .catch(function(error) {
-                    console.error("Error adding document: ", error);
-                    alert("Impossible d'envoyer l'actualité");
-                });
-        }
     });
 
+    /** display good alert **/
+    function displayGoodAlert() {
+        dismissBadAlert();
+        spinner.style.display = "none";
+        alertGood.innerText = "Actualité envoyée avec succès.";
+        alertGood.style.display = "block";
+    }
+
+    /** display bad alert **/
+    function displayBadAlert() {
+        dismissGoodAlert();
+        spinner.style.display = "none";
+        alertBad.innerText = "Impossible d'envoyer l'actualité. Veuillez réessayer.";
+        alertBad.style.display = "block";
+    }
+
+    /** dismiss good alert **/
+    function dismissGoodAlert() {
+        spinner.style.display = "none";
+        alertGood.style.display = "none";
+    }
+
+    /** dismiss bad alert **/
+    function dismissBadAlert() {
+        spinner.style.display = "none";
+        alertBad.style.display = "none";
+    }
 
     /** get time **/
     function getDateTime() {

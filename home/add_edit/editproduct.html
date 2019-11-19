@@ -27,6 +27,10 @@
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+		  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+		  crossorigin="anonymous">
 <!--===============================================================================================-->
 </head>
 <body>
@@ -45,7 +49,24 @@
 					<input class="input100" type="text" id="name" name="name" placeholder="Entrez le nom du produit">
 				</div>
 
+                <!-- Alert Bad -->
+                <div style="display: none" class="alert alert-danger" role="alert" id="alertBad">
+                </div>
 
+                <!-- Alert Good -->
+                <div style="display: none" class="alert alert-success alert-dismissible fade show" role="alert" id="alertGood">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <!-- Spinner -->
+                <button class="btn btn-primary" type="button" disabled style="display: none" id="spinner">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Chargement...
+                </button>
+
+                <!-- Button -->
 				<div class="container-contact100-form-btn">
 					<button class="contact100-form-btn">
 						<span>
@@ -168,6 +189,10 @@
 
 <script>
 
+    const alertBad = document.getElementById('alertBad');
+    const alertGood = document.getElementById('alertGood');
+    const spinner = document.getElementById('spinner');
+
     $('#product-form').on('submit', function (e) {
         console.log('\nclicked !')
         e.preventDefault();
@@ -175,6 +200,7 @@
         var name = $("#name").val();
 
         if(validateData(name)){
+            spinner.style.display = "block";
             populateDB(name);
         }
         console.log("Name : "+name);
@@ -182,7 +208,7 @@
         /** validate the data **/
         function validateData(name) {
             var correct = true;
-            if ((name == "")) {
+            if ((name === "")) {
                 console.log("data not valid.");
                 correct = false;
             }
@@ -197,38 +223,44 @@
                 name: name,
             }).then(function() {
                 console.log("Document successfully updated!");
-                alert("Produit modifié avec succès");
+                displayGoodAlert();
             }).catch(function(error) {
                 // The document probably doesn't exist.
                 console.error("Error updating document: ", error);
-                alert("Impossible de modifier le produit");
+                displayBadAlert();
             });
         }
 
     });
 
 
-    /*$('#deleteSpan').click( function(e){
-        e.preventDefault();
+    /** display good alert **/
+    function displayGoodAlert() {
+        dismissBadAlert();
+        spinner.style.display = "none";
+        alertGood.innerText = "Produit modifié avec succès.";
+        alertGood.style.display = "block";
+    }
 
-        console.log("\nkeys : "+themeKey+" | "+productKey);
+    /** display bad alert **/
+    function displayBadAlert() {
+        dismissGoodAlert();
+        spinner.style.display = "none";
+        alertBad.innerText = "Impossible de modifier le produit. Veuillez réessayer.";
+        alertBad.style.display = "block";
+    }
 
-        var qst = confirm("Ce produit sera définitivement supprimé. Cette action est irreversible.\nContinuer?");
-        if (qst == true) {
+    /** dismiss good alert **/
+    function dismissGoodAlert() {
+        spinner.style.display = "none";
+        alertGood.style.display = "none";
+    }
 
-            db.collection("themes").doc(themeKey).collection("products").doc(productKey).delete().then(function() {
-                console.log("Document successfully deleted!");
-                window.open("editproduct.html","_self");
-            }).catch(function(error) {
-                console.error("Error removing document: ", error);
-                alert("Impossible de supprimer le produit");
-            });
-
-
-        }
-
-        return false;
-    });*/
+    /** dismiss bad alert **/
+    function dismissBadAlert() {
+        spinner.style.display = "none";
+        alertBad.style.display = "none";
+    }
 </script>
 
 </body>

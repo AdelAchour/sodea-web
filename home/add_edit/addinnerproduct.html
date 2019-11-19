@@ -319,7 +319,9 @@
                     docRef.get().then(function(doc) {
                         if (doc.exists) {
                             console.log("Product data:", doc.data());
-                            var path = code + "/" + doc.get("name").toLowerCase().replace(new RegExp(" ", 'g'), "_") + "/" + name.toLowerCase();
+                            var path = code + "/" + doc.get("name").toLowerCase().replace(new RegExp(" ", 'g'), "_") + "/"
+								+ name.toLowerCase().replace(new RegExp(" ", 'g'), "_");
+
                             uploadImage(path, fileToUpload);
                         } else {
                             console.log("No such document!");

@@ -29,6 +29,10 @@
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main_actu.css">
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+		  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+		  crossorigin="anonymous">
 <!--===============================================================================================-->
 </head>
 <body>
@@ -54,6 +58,24 @@
 					<textarea class="input100" id="content" name="description" placeholder="Contenu de l'actualité..."></textarea>
 				</div>
 
+                <!-- Alert Bad -->
+                <div style="display: none" class="alert alert-danger" role="alert" id="alertBad">
+                </div>
+
+                <!-- Alert Good -->
+                <div style="display: none" class="alert alert-success alert-dismissible fade show" role="alert" id="alertGood">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <!-- Spinner -->
+                <button class="btn btn-primary" type="button" disabled style="display: none" id="spinner">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Chargement...
+                </button>
+
+                <!-- Button -->
 				<div class="container-contact100-form-btn">
 					<button class="contact100-form-btn">
 						<span>
@@ -145,7 +167,6 @@
         var queries = queryString.split("&");
 
         newsKey = queries[0].replace("keyNews=", "");
-
     }
 
     function getNewsDetails() {
@@ -175,6 +196,9 @@
 
 
 <script>
+    const alertBad = document.getElementById('alertBad');
+    const alertGood = document.getElementById('alertGood');
+    const spinner = document.getElementById('spinner');
 
     $('#product-form').on('submit', function (e) {
         console.log('\nclicked !')
@@ -184,6 +208,7 @@
         var content = $("#content").val();
 
         if(validateData(title, content)){
+            spinner.style.display = "block";
             populateDB(title, content);
         }
         console.log("Name : "+title+"\nDesc : "+content);
@@ -209,16 +234,43 @@
 				date_edit: dateEdit
             }).then(function() {
                 console.log("Document successfully updated!");
-                alert("Actualité modifiée avec succès");
+                displayGoodAlert();
             }).catch(function(error) {
                 // The document probably doesn't exist.
                 console.error("Error updating document: ", error);
-                alert("Impossible de modifier l'actualité");
+                displayBadAlert();
             });
         }
 
     });
 
+    /** display good alert **/
+    function displayGoodAlert() {
+        dismissBadAlert();
+        spinner.style.display = "none";
+        alertGood.innerText = "Actualité modifiée avec succès.";
+        alertGood.style.display = "block";
+    }
+
+    /** display bad alert **/
+    function displayBadAlert() {
+        dismissGoodAlert();
+        spinner.style.display = "none";
+        alertBad.innerText = "Impossible de modifier l'actualité. Veuillez réessayer.";
+        alertBad.style.display = "block";
+    }
+
+    /** dismiss good alert **/
+    function dismissGoodAlert() {
+        spinner.style.display = "none";
+        alertGood.style.display = "none";
+    }
+
+    /** dismiss bad alert **/
+    function dismissBadAlert() {
+        spinner.style.display = "none";
+        alertBad.style.display = "none";
+    }
 
     /** get time **/
     function getDateTime() {

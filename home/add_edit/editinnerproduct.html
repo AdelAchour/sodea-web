@@ -27,6 +27,10 @@
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main_inner.css">
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+		  integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+		  crossorigin="anonymous">
 <!--===============================================================================================-->
 </head>
 <body>
@@ -45,13 +49,36 @@
 					<input class="input100" type="text" id="name" name="name" placeholder="Entrez le nom du produit">
 				</div>
 
-
                 <!-- Description -->
 				<div class="wrap-input100 validate-input bg0 rs1-alert-validate" data-validate = "Entrez la description du produit">
 					<span class="label-input100">Description *</span>
 					<textarea class="input100" id="description" name="message" placeholder="Description du sous produit..."></textarea>
 				</div>
 
+                <!-- Image -->
+                <div class="wrap-input100 validate-input bg0 rs1-alert-validate" data-validate = "Entrez la description du produit">
+                    <span class="label-input100">Image *<br><br></span>
+                    <input type="file" name="pic" accept="image/*" id="image_picker">
+                </div>
+
+                <!-- Alert Bad -->
+                <div style="display: none" class="alert alert-danger" role="alert" id="alertBad">
+                </div>
+
+                <!-- Alert Good -->
+                <div style="display: none" class="alert alert-success alert-dismissible fade show" role="alert" id="alertGood">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <!-- Spinner -->
+                <button class="btn btn-primary" type="button" disabled style="display: none" id="spinner">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Chargement...
+                </button>
+
+                <!-- Button -->
 				<div class="container-contact100-form-btn">
 					<button class="contact100-form-btn">
 						<span>
@@ -68,6 +95,7 @@
     <script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-firestore.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.2.2/firebase-storage.js"></script>
 <!--===============================================================================================-->
 	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
 <!--===============================================================================================-->
@@ -122,12 +150,25 @@
 
 <script>
     /**** On change listener (selects) ****/
+    var fileToUpload = "";
+
+    var img = document.getElementById('image_picker');
+    img.addEventListener('change', function (e) {
+        var file = e.target.files[0];
+        fileToUpload = file;
+        if (typeof file === 'undefined'){
+            fileToUpload = "";
+        }
+        console.log("e : "+fileToUpload);
+        console.log("file : "+fileToUpload.name);
+    });
 
 </script>
 
 
 <script>
     var db = firebase.firestore();
+    var storageRef = firebase.storage().ref();
     var themeKey;
     var productKey;
     var innerProductKey;
@@ -143,7 +184,6 @@
         themeKey = queries[0].replace("keyTheme=", "");
         productKey = queries[1].replace("keyProduct=", "");
         innerProductKey = queries[2].replace("keyInnerProduct=", "");
-
     }
 
     function getInnerProductDetails() {
@@ -174,47 +214,149 @@
 
 <script>
 
+    const alertBad = document.getElementById('alertBad');
+    const alertGood = document.getElementById('alertGood');
+    const spinner = document.getElementById('spinner');
+
     $('#product-form').on('submit', function (e) {
         console.log('\nclicked !')
         e.preventDefault();
+        dismissGoodAlert();
+        dismissBadAlert();
 
         var name = $("#name").val();
         var desc = $("#description").val();
 
         if(validateData(name, desc)){
-            populateDB(name, desc);
+            spinner.style.display = "block";
+
+            if (fileToUpload === ""){
+                populateDBNoImage(name, desc);
+            }
+            else{
+                var docRef = db.collection("themes").doc(themeKey);
+                docRef.get().then(function(doc) {
+                    if (doc.exists) {
+                        console.log("Theme data:", doc.data());
+                        getSelectedProduct(doc.get("code"));
+                    } else {console.log("No such document!");}
+                    /** get product name **/
+                    function getSelectedProduct(code) {
+                        var docRef = db.collection("themes").doc(themeKey).collection("products").doc(productKey);
+                        docRef.get().then(function(doc) {
+                            if (doc.exists) {
+                                console.log("Product data:", doc.data());
+                                var path = code + "/" + doc.get("name").toLowerCase().replace(new RegExp(" ", 'g'), "_") + "/"
+                                    + name.toLowerCase().replace(new RegExp(" ", 'g'), "_");
+
+                                uploadImage(path, fileToUpload);
+                            } else {
+                                console.log("No such document!");
+                            }
+                        }).catch(function(error) { console.log("Error getting document:", error);});
+                        /** get product name **/
+                    }}).catch(function(error) {console.log("Error getting document:", error);});
+            }
         }
+
         console.log("Name : "+name+"\nDesc : "+desc);
 
         /** validate the data **/
         function validateData(name, desc) {
             var correct = true;
-            if ((name == "")||(desc == "")) {
+            if ((name === "")||(desc === "")) {
                 console.log("data not valid.");
                 correct = false;
             }
             return correct;
         }
 
-        /** populate the database **/
-        function populateDB(name, desc) {
-            console.log("\npopulating the database...\n")
+        /** upload image to firebase storage **/
+        function uploadImage(path, file) {
+            console.log("\nuploading the image to "+path+".jpg ...\n");
+            var imgRef = storageRef.child(path+'.jpg');
+            imgRef.put(file).then(function(snapshot) {
+                console.log('Uploaded a blob or file!');
+               dismissBadAlert();
+                populateDBNewImage(name, desc, path);
+            }).catch(function(error) {
+                console.error("Error adding document: ", error);
+                dismissGoodAlert();
+                displayBadAlert("Impossible d'ajouter le sous produit. Veuillez réessayer.");
+            });
+        }
+
+        /** populate the database with a new image path **/
+        function populateDBNewImage(name, desc, path) {
+            console.log("\npopulating the database with a new image...\n");
 
             return db.collection("themes").doc(themeKey).collection("products").doc(productKey)
              .collection("inner_products").doc(innerProductKey).update({
                 name: name,
-                description: desc
+                description: desc,
+                pic: path+".jpg"
             }).then(function() {
                 console.log("Document successfully updated!");
-                alert("Sous produit modifié avec succès");
+                dismissBadAlert();
+                displayGoodAlert("Sous produit modifié avec succès");
             }).catch(function(error) {
                 // The document probably doesn't exist.
                 console.error("Error updating document: ", error);
-                alert("Impossible de modifier le sous produit");
+                dismissGoodAlert();
+                displayBadAlert("Impossible de modifier le sous produit");
             });
         }
 
+        /** populate the database without a new image **/
+        function populateDBNoImage(name, desc) {
+            console.log("\npopulating the database...\n");
+
+            return db.collection("themes").doc(themeKey).collection("products").doc(productKey)
+                .collection("inner_products").doc(innerProductKey).update({
+                    name: name,
+                    description: desc
+                }).then(function() {
+                    console.log("Document successfully updated!");
+                    dismissBadAlert();
+                    displayGoodAlert("Sous produit modifié avec succès");
+                }).catch(function(error) {
+                    // The document probably doesn't exist.
+                    console.error("Error updating document: ", error);
+                    dismissGoodAlert();
+                    displayBadAlert("Impossible de modifier le sous produit");
+                });
+        }
+
     });
+
+
+    /** display good alert **/
+    function displayGoodAlert(text) {
+        dismissBadAlert();
+        spinner.style.display = "none";
+        alertGood.innerText = text;
+        alertGood.style.display = "block";
+    }
+
+    /** display bad alert **/
+    function displayBadAlert(text) {
+        dismissGoodAlert();
+        spinner.style.display = "none";
+        alertBad.innerText = text;
+        alertBad.style.display = "block";
+    }
+
+    /** dismiss good alert **/
+    function dismissGoodAlert() {
+        spinner.style.display = "none";
+        alertGood.style.display = "none";
+    }
+
+    /** dismiss bad alert **/
+    function dismissBadAlert() {
+        spinner.style.display = "none";
+        alertBad.style.display = "none";
+    }
 </script>
 
 </body>
