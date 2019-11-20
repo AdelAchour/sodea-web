@@ -69,7 +69,7 @@
 				</div>-->
 
                 <!-- Alert Image -->
-                <div style="display: none" class="alert alert-danger" role="alert" id="alertImg">
+                <div style="display: none" class="alert alert-danger" role="alert" id="alertBad">
                 </div>
 
                 <!-- Alert Good -->
@@ -212,16 +212,19 @@
 
 <script>
 
+    const alertBad = document.getElementById('alertImg');
+    const alertGood = document.getElementById('alertGood');
+    const spinner = document.getElementById('spinner');
+
     $('#product-form').on('submit', function (e) {
         console.log('\nclicked !');
         e.preventDefault();
 
+        dismissBadAlert();
+        dismissGoodAlert();
+
         var keyTheme = themeSelect.options[themeSelect.selectedIndex].value;
         var name = $("#name").val();
-
-        const alertImg = document.getElementById('alertImg');
-        const alertGood = document.getElementById('alertGood');
-        const spinner = document.getElementById('spinner');
 
         if(validateData(name)){
             spinner.style.display = "block";
@@ -249,21 +252,51 @@
                 .then(function(docRef) {
                     console.log("Document written with ID: ", docRef.id);
                     spinner.style.display = "none";
-                    alertImg.style.display = "none";
+                    alertBad.style.display = "none";
 
                     alertGood.innerText = "Produit ajouté avec succès.";
                     alertGood.style.display = "block";
+
+                    displayGoodAlert("Produit ajouté avec succès.");
                 })
                 .catch(function(error) {
                     console.error("Error adding document: ", error);
                     spinner.style.display = "none";
                     alertGood.style.display = "none";
 
-                    alertImg.innerText = "Impossible d'ajouter le produit. Veuillez réessayer.";
-                    alertImg.style.display = "block";
+                    alertBad.innerText = "Impossible d'ajouter le produit. Veuillez réessayer.";
+                    alertBad.style.display = "block";
                 });
         }
     });
+
+    /** display good alert **/
+    function displayGoodAlert(text) {
+        dismissBadAlert();
+        spinner.style.display = "none";
+        alertGood.innerText = text;
+        alertGood.style.display = "block";
+    }
+
+    /** display bad alert **/
+    function displayBadAlert(text) {
+        dismissGoodAlert();
+        spinner.style.display = "none";
+        alertBad.innerText = text;
+        alertBad.style.display = "block";
+    }
+
+    /** dismiss good alert **/
+    function dismissGoodAlert() {
+        spinner.style.display = "none";
+        alertGood.style.display = "none";
+    }
+
+    /** dismiss bad alert **/
+    function dismissBadAlert() {
+        spinner.style.display = "none";
+        alertBad.style.display = "none";
+    }
 </script>
 
 </body>

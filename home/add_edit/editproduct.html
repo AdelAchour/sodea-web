@@ -197,6 +197,9 @@
         console.log('\nclicked !')
         e.preventDefault();
 
+        dismissBadAlert();
+        dismissGoodAlert();
+
         var name = $("#name").val();
 
         if(validateData(name)){

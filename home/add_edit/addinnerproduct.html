@@ -294,6 +294,9 @@
         console.log('\nclicked !');
         e.preventDefault();
 
+        dismissBadAlert();
+        dismissGoodAlert();
+
         var keyTheme = themeSelect.options[themeSelect.selectedIndex].value;
         var keyProduct = productSelect.options[productSelect.selectedIndex].value;
 
@@ -304,8 +307,6 @@
 
         if(validateData(name, description, fileToUpload)){
             spinner.style.display = "block";
-            dismissBadAlert();
-            dismissGoodAlert();
 
             var docRef = db.collection("themes").doc(keyTheme);
             docRef.get().then(function(doc) {

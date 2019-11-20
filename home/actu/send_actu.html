@@ -158,7 +158,8 @@
     $('#actu-form').on('submit', function (e) {
         console.log('\nclicked !')
         e.preventDefault();
-
+        dismissBadAlert();
+        dismissGoodAlert();
 
 
         var title = $("#title").val();
