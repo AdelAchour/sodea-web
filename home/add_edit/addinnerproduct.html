@@ -84,7 +84,7 @@
 				</div>
 
                 <!-- Alert Image -->
-                <div style="display: none" class="alert alert-danger" role="alert" id="alertImg">
+                <div style="display: none" class="alert alert-danger" role="alert" id="alertBad">
                 </div>
 
                 <!-- Alert Good -->
@@ -285,6 +285,11 @@
 
 
 <script>
+
+    const alertBad = document.getElementById('alertBad');
+    const alertGood = document.getElementById('alertGood');
+    const spinner = document.getElementById('spinner');
+
     $('#product-form').on('submit', function (e) {
         console.log('\nclicked !');
         e.preventDefault();
@@ -295,14 +300,12 @@
         var name = $("#name").val();
         var description = $("#description").val();
 
-        const alertImg = document.getElementById('alertImg');
-        const alertGood = document.getElementById('alertGood');
-        const spinner = document.getElementById('spinner');
-
         console.log("image picker : "+fileToUpload);
 
         if(validateData(name, description, fileToUpload)){
             spinner.style.display = "block";
+            dismissBadAlert();
+            dismissGoodAlert();
 
             var docRef = db.collection("themes").doc(keyTheme);
             docRef.get().then(function(doc) {
@@ -312,7 +315,6 @@
                 } else {
                     console.log("No such document!");
                 }
-
                 /** get product name **/
                 function getSelectedProduct(code) {
                     var docRef = db.collection("themes").doc(keyTheme).collection("products").doc(keyProduct);
@@ -323,16 +325,12 @@
 								+ name.toLowerCase().replace(new RegExp(" ", 'g'), "_");
 
                             uploadImage(path, fileToUpload);
-                        } else {
-                            console.log("No such document!");
-                        }
+                        } else { console.log("No such document!");}
                     }).catch(function(error) { console.log("Error getting document:", error);});
                 /** get product name **/
 
                 }
-            }).catch(function(error) {
-                console.log("Error getting document:", error);
-            });
+            }).catch(function(error) {console.log("Error getting document:", error);});
         }
 
         console.log(keyTheme+"\n"+keyProduct+"\n"+name+"\n"+description);
@@ -342,11 +340,7 @@
             var correct = true;
             if ((name === "") || (description === "") || (file === "")) {
                 if (file === ""){
-                    alertImg.innerText = "Vous devez importer une image du produit";
-                    alertImg.style.display = "block";
-                }
-                else {
-                    alertImg.style.display = "none";
+                    displayBadAlert("Vous devez importer une image du produit");
                 }
                 console.log("data not valid.");
                 correct = false;
@@ -355,12 +349,8 @@
                 console.log("size : "+file.size);
                 if (file.size > 200000){
                     console.log("big pic.");
-                    alertImg.innerText = "La taille de l'image doit être inférieur à 200ko";
-                    alertImg.style.display = "block";
+                    displayBadAlert("La taille de l'image doit être inférieur à 200ko");
                     correct = false;
-                }
-                else {
-                    alertImg.style.display = "none";
                 }
             }
 
@@ -374,15 +364,11 @@
             var imgRef = storageRef.child(path+'.jpg');
             imgRef.put(file).then(function(snapshot) {
                 console.log('Uploaded a blob or file!');
-                alertImg.style.display = "none";
+                dismissBadAlert();
                 populateDB(keyTheme, keyProduct, name, description, path);
             }).catch(function(error) {
                 console.error("Error adding document: ", error);
-                spinner.style.display = "none";
-                alertGood.style.display = "none";
-
-                alertImg.innerText = "Impossible d'ajouter le sous produit. Veuillez réessayer.";
-                alertImg.style.display = "block";
+                displayBadAlert("Impossible d'ajouter le sous produit. Veuillez réessayer.")
             });
         }
 
@@ -398,22 +384,43 @@
             })
                 .then(function(docRef) {
                     console.log("Document written with ID: ", docRef.id);
-                    spinner.style.display = "none";
-                    alertImg.style.display = "none";
-
-                    alertGood.innerText = "Sous produit ajouté avec succès.";
-                    alertGood.style.display = "block";
+                    displayGoodAlert("Sous produit ajouté avec succès.");
                 })
                 .catch(function(error) {
                     console.error("Error adding document: ", error);
-                    spinner.style.display = "none";
-                    alertGood.style.display = "none";
-
-                    alertImg.innerText = "Impossible d'ajouter le sous produit. Veuillez réessayer.";
-                    alertImg.style.display = "block";
+                    displayBadAlert("Impossible d'ajouter le sous produit. Veuillez réessayer.");
                 });
         }
     });
+
+
+    /** display good alert **/
+    function displayGoodAlert(text) {
+        dismissBadAlert();
+        spinner.style.display = "none";
+        alertGood.innerText = text;
+        alertGood.style.display = "block";
+    }
+
+    /** display bad alert **/
+    function displayBadAlert(text) {
+        dismissGoodAlert();
+        spinner.style.display = "none";
+        alertBad.innerText = text;
+        alertBad.style.display = "block";
+    }
+
+    /** dismiss good alert **/
+    function dismissGoodAlert() {
+        spinner.style.display = "none";
+        alertGood.style.display = "none";
+    }
+
+    /** dismiss bad alert **/
+    function dismissBadAlert() {
+        spinner.style.display = "none";
+        alertBad.style.display = "none";
+    }
 </script>
 
 </body>
