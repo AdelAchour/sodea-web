@@ -2,14 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0e5ce5a5-f53b-483e-a295-280e3aa28112" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/home/actu/send_actu.html" beforeDir="false" afterPath="$PROJECT_DIR$/home/actu/send_actu.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/home/add_edit/addinnerproduct.html" beforeDir="false" afterPath="$PROJECT_DIR$/home/add_edit/addinnerproduct.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/home/add_edit/editinnerproduct.html" beforeDir="false" afterPath="$PROJECT_DIR$/home/add_edit/editinnerproduct.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/home/add_edit/editnews.html" beforeDir="false" afterPath="$PROJECT_DIR$/home/add_edit/editnews.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/home/add_edit/editproduct.html" beforeDir="false" afterPath="$PROJECT_DIR$/home/add_edit/editproduct.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/home/display_all/innerproducts.html" beforeDir="false" afterPath="$PROJECT_DIR$/home/display_all/innerproducts.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/home/display_all/products.html" beforeDir="false" afterPath="$PROJECT_DIR$/home/display_all/products.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/home/home.html" beforeDir="false" afterPath="$PROJECT_DIR$/home/home.html" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -51,7 +44,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="editinnerproduct.html" pinned="false" current-in-tab="true">
+      <file leaf-file-name="editinnerproduct.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/home/add_edit/editinnerproduct.html">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="-1032">
@@ -60,6 +53,23 @@
                 <element signature="n#style#0;n#div#2;n#form#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#div#3;n#form#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#button#0;n#form#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="innerproducts.html" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/home/display_all/innerproducts.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="323">
+              <caret line="121" column="29" selection-start-line="121" selection-start-column="29" selection-end-line="121" selection-end-column="29" />
+              <folding>
+                <element signature="n#style#0;n#div#1;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#h8#0;n#div#2;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#h8#1;n#div#2;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#1;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#2;n#div#0;n#!!top" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -96,6 +106,7 @@
         <option value="$PROJECT_DIR$/home/add_edit/editnews.html" />
         <option value="$PROJECT_DIR$/home/add_edit/addinnerproduct.html" />
         <option value="$PROJECT_DIR$/home/add_edit/editinnerproduct.html" />
+        <option value="$PROJECT_DIR$/home/display_all/innerproducts.html" />
       </list>
     </option>
   </component>
@@ -137,7 +148,7 @@
               <item name="SodeaWebAdmin" type="b2602c69:ProjectViewProjectNode" />
               <item name="SodeaWebAdmin" type="462c0819:PsiDirectoryNode" />
               <item name="home" type="462c0819:PsiDirectoryNode" />
-              <item name="add_edit" type="462c0819:PsiDirectoryNode" />
+              <item name="display_all" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -180,12 +191,12 @@
       <updated>1573132091944</updated>
       <workItem from="1573132093361" duration="12194000" />
       <workItem from="1574072821202" duration="10832000" />
-      <workItem from="1574169064499" duration="5515000" />
+      <workItem from="1574169064499" duration="5548000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="28541000" />
+    <option name="totallyTimeSpent" value="28574000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-1927" y="331" width="1550" height="838" extended-state="6" />
@@ -486,6 +497,21 @@
             <element signature="n#style#0;n#div#2;n#form#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#div#3;n#form#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#button#0;n#form#0;n#div#0;n#div#0;n#body#0;n#html#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/home/display_all/innerproducts.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="121" column="29" selection-start-line="121" selection-start-column="29" selection-end-line="121" selection-end-column="29" />
+          <folding>
+            <element signature="n#style#0;n#div#1;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#h8#0;n#div#2;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#h8#1;n#div#2;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#1;n#div#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#2;n#div#0;n#!!top" expanded="true" />
           </folding>
         </state>
       </provider>

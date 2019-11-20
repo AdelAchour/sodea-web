@@ -119,11 +119,14 @@
             var key = arrayInnerProducts[i].id;
             var name = arrayInnerProducts[i].get("name");
             var desc = arrayInnerProducts[i].get("description");
+            var littleDesc = desc.split(' ').slice(0,30).join(' ');
+            littleDesc = littleDesc + "...";
+            console.log("little : "+littleDesc);
 
             div_row = div_row +
                 '<div class="row">' +
                 '<div class="cell" title="Nom" id="'+key+'" onclick="openWindow(this.id)">'+name+'</div>' +
-                '<div class="cell" style="padding-left: 20px; padding-right: 20px" title="Description">'+desc+'</div>' +
+                '<div class="cell" style="padding-left: 20px; padding-right: 20px" title="Description">'+littleDesc+'</div>' +
                 '<div class="cell" title="Action">' +
                 '<h8 style="display: inline-block; width: 50%;" id="'+key+'" onclick="editProduct(this.id)">Modifier</h8>' +
                 '<h8 id="'+key+'" onclick="deleteProduct(this.id)" style="color:darkred;">Supprimer</h8>' +
